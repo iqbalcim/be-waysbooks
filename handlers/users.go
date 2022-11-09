@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,15 +14,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type handler struct {
+type handlerUser struct {
 	UserRepository repositories.UserRepository
 }
 
-func HandlerUser(UserRepository repositories.UserRepository) *handler {
-	return &handler{UserRepository}
+func HandlerUser(UserRepository repositories.UserRepository) *handlerUser {
+	return &handlerUser{UserRepository}
 }
 
-func (h *handler) FindUsers(w http.ResponseWriter, r *http.Request){
+func (h *handlerUser) FindUsers(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	users, err := h.UserRepository.FindUsers()
@@ -44,7 +43,7 @@ func (h *handler) FindUsers(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *handler) GetUser(w http.ResponseWriter, r *http.Request){
+func (h *handlerUser) GetUser(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
@@ -65,13 +64,11 @@ func (h *handler) GetUser(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request){
+func (h *handlerUser) UpdateUser(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	dataContex := r.Context().Value("dataFile")
 	filename := dataContex.(string)
-
-	fmt.Println(filename)
 
 	request := usersdto.UpdateUserRequest{
 		Name: r.FormValue("fullName"),
@@ -131,7 +128,7 @@ func (h *handler) UpdateUser(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request){
+func (h *handlerUser) DeleteUser(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
