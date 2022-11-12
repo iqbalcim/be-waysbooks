@@ -48,7 +48,7 @@ func (r *repository) UpdateCartQty(cart models.Cart, ID int) (models.Cart, error
 }
 
 func (r *repository) DeleteCartByID(cart models.Cart, ID int) (models.Cart, error) {
-	err := r.db.Delete(&cart).Error
+	err := r.db.Delete(&cart, "id=?", ID).Preload("Books").Preload("User").Error
 	return cart, err
 }
 
