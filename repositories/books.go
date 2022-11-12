@@ -7,9 +7,9 @@ import (
 )
 
 type BookRepository interface {
+	CreateBook(book models.Book) (models.Book ,error)
 	FindBooks() ([]models.Book, error)
 	GetBook(ID int)(models.Book, error)
-	CreateBook(book models.Book) (models.Book ,error)
 	UpdateBook(book models.Book, ID int) (models.Book ,error)
 	DeleteBook(book models.Book, ID int) (models.Book ,error)
 }
