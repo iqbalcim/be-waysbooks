@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 	authdto "waysbooks/dto/auth"
 	dto "waysbooks/dto/result"
@@ -61,6 +62,7 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request){
 		Email: request.Email,
 		Password: password,
 		Role: role,
+		Image: os.Getenv("PATH_FILE")+ "default.png",
 	}
 
 	data, err := h.AuthRepository.Register(user)
@@ -92,6 +94,7 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request){
 		Email: request.Email,
 		Password: request.Password,
 	}
+
 
 	// Check email
 	user, err := h.AuthRepository.Login(user.Email)
@@ -130,10 +133,38 @@ func (h *handlerAuth) Login(w http.ResponseWriter, r *http.Request){
 		Name: user.Name,
 		Email: user.Email,
 		Token: token,
+		Role: user.Role,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	response := dto.SuccessResult{Code: "Success", Data: loginResponse}
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func (h *handlerAuth) CheckAuth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	userId := int(userInfo["id"].(float64))
+
+	// Check User by Id
+	user, err := h.AuthRepository.Getuser(userId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	CheckAuthResponse := authdto.CheckAuthResponse{
+		Id:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := dto.SuccessResult{Code: "Success", Data: CheckAuthResponse}
+	json.NewEncoder(w).Encode(response)
 }

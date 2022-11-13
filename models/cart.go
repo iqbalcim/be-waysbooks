@@ -5,7 +5,7 @@ import "time"
 type Cart struct {
 	ID         		int          `json:"id" gorm:"primaryKey;autoIncrement"`
 	Qty        		int          `json:"qty"`
-	TotalPayment 	int          `json:"totalPayment"`
+	Price 			int          `json:"price"`
 	BookID  		int          `json:"bookId"`
 	Books	  		Book     	`json:"books" gorm:"foreignKey:BookID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	UserID    		int          `json:"userId" `
@@ -17,7 +17,7 @@ type Cart struct {
 type CartUpdateRequest struct {
 	ID         int `json:"id"`
 	Qty        int `json:"qty"`
-	TotalPayment int `json:"totalPayment"`
+	Price int `json:"price"`
 }
 
 func (CartUpdateRequest) TableName() string {
