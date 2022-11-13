@@ -55,13 +55,11 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request){
 		json.NewEncoder(w).Encode(response)
 	}
 
-	role := "user"
-
 	user := models.User {
 		Name : request.Name,
 		Email: request.Email,
+		Role: request.Role,
 		Password: password,
-		Role: role,
 		Image: os.Getenv("PATH_FILE")+ "default.png",
 	}
 

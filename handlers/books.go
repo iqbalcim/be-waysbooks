@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,6 +12,8 @@ import (
 	"waysbooks/models"
 	"waysbooks/repositories"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
@@ -34,7 +38,7 @@ func (h *handlerBook) FindBooks(w http.ResponseWriter, r *http.Request){
 	}
 
 	for i, p := range books {
-		books[i].Thumbnail =  p.Thumbnail
+		books[i].Thumbnail = p.Thumbnail
 	}
 
 	for i,p := range books {
@@ -70,18 +74,32 @@ func (h *handlerBook) GetBook(w http.ResponseWriter, r *http.Request){
 func (h *handlerBook) CreateBook (w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
-	dataContex := r.Context().Value("dataFile")
-  	filename := dataContex.(string)
 
-	filename = os.Getenv("PATH_FILE") + filename
+	dataContex := r.Context().Value("dataFile")
+  	filepath := dataContex.(string)
 
 	dataPDF := r.Context().Value("dataPDF")
   	filePDF := dataPDF.(string)
 
 	filePDF = os.Getenv("PATH_FILE") + filePDF
 
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
+
 	pages, _ := strconv.Atoi(r.FormValue("pages"))
 	price, _ := strconv.Atoi(r.FormValue("price"))
+
+	// Add your Cloudinary credentials ...
+cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+// Upload file to Cloudinary ...
+resp, err := cld.Upload.Upload(ctx, filepath, uploader.UploadParams{Folder: "waysbooks"});
+
+if err != nil {
+  fmt.Println(err.Error())
+}
 
 	request := booksdto.BookRequest{
 		Title:       			r.FormValue("title"),
@@ -95,7 +113,7 @@ func (h *handlerBook) CreateBook (w http.ResponseWriter, r *http.Request){
 
 	validation := validator.New()
 
-	err := validation.Struct(request)
+	err = validation.Struct(request)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -113,7 +131,7 @@ func (h *handlerBook) CreateBook (w http.ResponseWriter, r *http.Request){
 		Price:    				request.Price,
 		Description:       		request.Description,
 		BookAttachment: 		filePDF,
-		Thumbnail: 				filename,
+		Thumbnail: 				resp.SecureURL,
 	}
 	
 
