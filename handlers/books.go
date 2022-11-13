@@ -135,8 +135,12 @@ func (h *handlerBook) UpdateBook (w http.ResponseWriter, r *http.Request){
 	dataContex := r.Context().Value("dataFile")
   	filename := dataContex.(string)
 
+	filename = os.Getenv("PATH_FILE") + filename
+
 	dataPDF := r.Context().Value("dataPDF")
   	filePDF := dataPDF.(string)
+
+	filePDF = os.Getenv("PATH_FILE") + filePDF
 
 	pages, _ := strconv.Atoi(r.FormValue("pages"))
 	price, _ := strconv.Atoi(r.FormValue("price"))
