@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 	authdto "waysbooks/dto/auth"
 	dto "waysbooks/dto/result"
@@ -60,7 +59,7 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request){
 		Email: request.Email,
 		Role: request.Role,
 		Password: password,
-		Image: os.Getenv("PATH_FILE")+ "default.png",
+		Image: "https://res.cloudinary.com/dyinfdy7y/image/upload/v1668361633/waysbooks/user_mvo4p2.png",
 	}
 
 	data, err := h.AuthRepository.Register(user)
