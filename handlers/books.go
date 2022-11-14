@@ -71,7 +71,7 @@ func (h *handlerBook) GetBook(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *handlerBook) CreateBook (w http.ResponseWriter, r *http.Request){
+func (h *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 
@@ -149,11 +149,14 @@ func (h *handlerBook) UpdateBook (w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
-
+	
 	dataContex := r.Context().Value("dataFile")
-  	filename := dataContex.(string)
+	filepath := dataContex.(string)
 
-	filename = os.Getenv("PATH_FILE") + filename
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
 
 	dataPDF := r.Context().Value("dataPDF")
   	filePDF := dataPDF.(string)
@@ -162,6 +165,18 @@ func (h *handlerBook) UpdateBook (w http.ResponseWriter, r *http.Request){
 
 	pages, _ := strconv.Atoi(r.FormValue("pages"))
 	price, _ := strconv.Atoi(r.FormValue("price"))
+
+	
+	// Add your Cloudinary credentials ...
+cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+// Upload file to Cloudinary ...
+resp, err := cld.Upload.Upload(ctx, filepath, uploader.UploadParams{Folder: "waysbooks"});
+
+if err != nil {
+	  fmt.Println(err.Error())
+}
+
 
 	request := booksdto.BookRequest{
 		Title:       			r.FormValue("title"),
@@ -175,7 +190,7 @@ func (h *handlerBook) UpdateBook (w http.ResponseWriter, r *http.Request){
 
 	validation := validator.New()
 
-	err := validation.Struct(request)
+	err = validation.Struct(request)
 	
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -214,8 +229,8 @@ func (h *handlerBook) UpdateBook (w http.ResponseWriter, r *http.Request){
 		book.Description = request.Description
 	}
 
-	if filename != "" {
-		book.Thumbnail = filename
+	if filepath != "" {
+		book.Thumbnail = resp.SecureURL
 	}
 
 	if filePDF != "" {

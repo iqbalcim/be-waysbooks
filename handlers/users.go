@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"waysbooks/pkg/bcrypt"
 	"waysbooks/repositories"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gorilla/mux"
 )
 
@@ -66,12 +69,22 @@ func (h *handlerUser) UpdateUser(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
 	dataContex := r.Context().Value("dataFile")
-	filename := ""
-	if dataContex != nil {
-		filename = dataContex.(string)
-	}
+  	filepath := dataContex.(string)
 
-	filename = os.Getenv("PATH_FILE") + filename
+	  var ctx = context.Background()
+	  var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	  var API_KEY = os.Getenv("API_KEY")
+	  var API_SECRET = os.Getenv("API_SECRET")
+
+	  	// Add your Cloudinary credentials ...
+cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+// Upload file to Cloudinary ...
+resp, err := cld.Upload.Upload(ctx, filepath, uploader.UploadParams{Folder: "waysbooks"});
+
+if err != nil {
+	panic(err)
+}
 
 	request := usersdto.UpdateUserRequest{
 		Name: r.FormValue("fullName"),
@@ -80,7 +93,7 @@ func (h *handlerUser) UpdateUser(w http.ResponseWriter, r *http.Request){
 		Phone: r.FormValue("phone"),
 		Gender: r.FormValue("gender"),
 		Address: r.FormValue("address"),
-		Image: filename,
+		Image: resp.SecureURL,
 	}
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
@@ -120,7 +133,7 @@ func (h *handlerUser) UpdateUser(w http.ResponseWriter, r *http.Request){
 	}
 
 	if request.Image != "" {
-		user.Image = filename
+		user.Image = resp.SecureURL
 	}
 
 	data, err := h.UserRepository.UpdateUser(user, id)
