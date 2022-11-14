@@ -71,6 +71,23 @@ func (h *handlerBook) GetBook(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(response)
 }
 
+func (h *handlerBook) LatestBooks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	books, err := h.BookRepository.LatestBooks()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	response := dto.SuccessResult{Code: "success", Data: books}
+	json.NewEncoder(w).Encode(response)
+}
+
 func (h *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 

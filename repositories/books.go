@@ -9,6 +9,7 @@ import (
 type BookRepository interface {
 	CreateBook(book models.Book) (models.Book ,error)
 	FindBooks() ([]models.Book, error)
+	LatestBooks() ([]models.Book, error)
 	GetBook(ID int)(models.Book, error)
 	UpdateBook(book models.Book, ID int) (models.Book ,error)
 	DeleteBook(book models.Book, ID int) (models.Book ,error)
@@ -23,6 +24,13 @@ func (r *repository) FindBooks() ([]models.Book, error){
 	err := r.db.Find(&books).Error
 	return books, err
 }
+
+func (r *repository) LatestBooks() ([]models.Book, error){
+	var books []models.Book
+	err := r.db.Order("id desc").Find(&books).Error
+	return books, err
+}
+
 
 func (r *repository) GetBook(ID int) (models.Book, error){
 	var book models.Book
