@@ -59,7 +59,7 @@ func (h *handlerAuth) Register(w http.ResponseWriter, r *http.Request){
 		Email: request.Email,
 		Role: request.Role,
 		Password: password,
-		Image: "https://res.cloudinary.com/dyinfdy7y/image/upload/v1668361633/waysbooks/user_mvo4p2.png",
+		Image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZt50gh1uEkLw2lX99k9bWVzxDiKZ4O9rmqxk98XhfOg&s",
 	}
 
 	data, err := h.AuthRepository.Register(user)

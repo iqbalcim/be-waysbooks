@@ -74,6 +74,6 @@ func (r *repository) DeleteCartByID(cart models.Cart, ID int) (models.Cart, erro
 }
 
 func (r *repository) DeleteCartByUser(cart models.Cart, userID int) error {
-	err := r.db.Where("user_id = ?", userID).Delete(&cart).Error
+	err := r.db.Preload("Books").Preload("User").Delete(&cart, "user_id=?", userID).Error
 	return err
 }

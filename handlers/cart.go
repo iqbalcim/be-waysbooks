@@ -154,11 +154,12 @@ func (h *handlerCart) DeleteCartByID(w http.ResponseWriter, r *http.Request) {
 func (h *handlerCart) DeleteCartByUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userId, _ := strconv.Atoi(mux.Vars(r)["userId"])
+	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	userId := int(userInfo["id"].(float64))
 
 	var cartDeleted models.Cart
 
-	 err := h.cartRepository.DeleteCartByUser(cartDeleted, userId)
+	err := h.cartRepository.DeleteCartByUser(cartDeleted, userId)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -168,7 +169,6 @@ func (h *handlerCart) DeleteCartByUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: "Success", Data: err}
+	response := dto.SuccessResult{Code: "Success", Data: cartDeleted}
 	json.NewEncoder(w).Encode(response)
 }
-
